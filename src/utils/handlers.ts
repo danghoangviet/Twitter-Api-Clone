@@ -1,7 +1,7 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express'
 
 type FunctionType<P> = (
-  req: Request<P>,
+  req: Request<P, any, any, any>,
   res: Response,
   next: NextFunction
 ) => Promise<void> | Promise<Response<any, Record<string, any>>> | void

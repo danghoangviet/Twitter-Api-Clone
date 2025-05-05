@@ -40,21 +40,6 @@ const confirmPasswordSchema: ParamSchema = {
   in: ['body'],
   notEmpty: true,
   errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED,
-  // isLength: {
-  //   options: { min: 6 },
-  //   errorMessage: 'Confirm password must be at least 6 characters long'
-  // },
-  // isStrongPassword: {
-  //   options: {
-  //     minLength: 6,
-  //     minLowercase: 1,
-  //     minUppercase: 1,
-  //     minNumbers: 1,
-  //     minSymbols: 1
-  //   },
-  //   errorMessage:
-  //     'Password must contain at least one lowercase letter, one uppercase letter, one number, and one symbol'
-  // },
   trim: true,
   custom: {
     options: (value, { req }) => {
@@ -541,6 +526,15 @@ const changePasswordValidator = validate(
   })
 )
 
+const isUserLoggedInValidator = (middleware: (req: Request, res: Response, nex: NextFunction) => void) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (req.headers.authorization) {
+      return middleware(req, res, next)
+    }
+    next()
+  }
+}
+
 export {
   emailTokenValidator,
   loginValidator,
@@ -554,5 +548,6 @@ export {
   updateMeValidator,
   followValidator,
   unfollowValidator,
-  changePasswordValidator
+  changePasswordValidator,
+  isUserLoggedInValidator
 }

@@ -10,6 +10,11 @@ import { initFolder } from './utils/files'
 import { config } from 'dotenv'
 import { UPLOAD_IMG_DIR, UPLOAD_VIDEO_DIR } from './constants/dir'
 import tweetsRouter from './routers/tweets.routes'
+import bookmarksRouter from './routers/bookmarks.routes'
+import likesRouter from './routers/likes.routes'
+import searchRouter from './routers/search.routes'
+// import '~/utils/fake'
+import '~/utils/s3'
 config()
 
 databaseService.connect().then(() => {
@@ -17,6 +22,7 @@ databaseService.connect().then(() => {
   databaseService.indexRefreshTokens()
   databaseService.indexVideoStatus()
   databaseService.indexFollows()
+  databaseService.indexTweets()
 }) // Call the MongoDB connection function
 const app = express()
 const port = process.env.PORT || 4000
@@ -30,7 +36,9 @@ app.use(cors())
 app.use('/users', usersRouter) // Mount the users router on the /users path
 app.use('/medias', mediasRouter) // Mount the medias router on the /medias path
 app.use('/tweets', tweetsRouter) // Mount the tweets router on the /tweets path
-
+app.use('/bookmarks', bookmarksRouter) // Mount the bookmarks router on the /bookmarks path
+app.use('/likes', likesRouter) // Mount the bookmarks router on the /bookmarks path
+app.use('/search', searchRouter)
 app.use('/static/images', express.static(UPLOAD_IMG_DIR)) //Servicing static file -> use express.static
 app.use('/static', staticRouter) //Servicing static file -> custom
 app.use(

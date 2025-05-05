@@ -5,6 +5,9 @@ import RefreshTokenSchema from '~/models/schemas/RefreshToken.schema'
 import FollowSchema from '~/models/schemas/Follow.schema'
 import VideoStatus from '~/models/schemas/VideoStatus.schema'
 import Tweet from '~/models/schemas/Twitter.schema'
+import Hashtag from '~/models/schemas/Hashtag.schema'
+import Bookmark from '~/models/schemas/Bookmark.schema'
+import LikeSchema from '~/models/schemas/Like.schema'
 dotenv.config()
 const username = process.env.DB_USERNAME
 const password = process.env.DB_PASSWORD
@@ -76,6 +79,13 @@ class DatabaseService {
     }
   }
 
+  async indexTweets() {
+    const exitsValue = await this.tweets.indexExists(['content_text'])
+    if (!exitsValue) {
+      this.tweets.createIndex({ content: 'text' }, { default_language: 'none' })
+    }
+  }
+
   get users(): Collection<Users> {
     return this.db.collection(userCollection as string)
   }
@@ -94,6 +104,18 @@ class DatabaseService {
 
   get tweets(): Collection<Tweet> {
     return this.db.collection(process.env.TWEETS_COLLECTION as string)
+  }
+
+  get hashtags(): Collection<Hashtag> {
+    return this.db.collection(process.env.HASHTAGS_COLLECTION as string)
+  }
+
+  get bookmarks(): Collection<Bookmark> {
+    return this.db.collection(process.env.BOOKMARKS_COLLECTION as string)
+  }
+
+  get likes(): Collection<LikeSchema> {
+    return this.db.collection(process.env.LIKES_COLLECTION as string)
   }
 }
 const databaseService = new DatabaseService()

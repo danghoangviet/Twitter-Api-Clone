@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import formidable, { File } from 'formidable'
-import { existsSync, mkdirSync, renameSync, rmSync } from 'fs'
+import { existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync } from 'fs'
 import { isEmpty } from 'lodash'
 import path from 'path'
 import { nanoid } from 'nanoid'
@@ -152,4 +152,22 @@ export const getNameFromFullName = (fullname: string) => {
 export const getExtension = (fullname: string) => {
   const nameArr = fullname.split('.')
   return nameArr[nameArr.length - 1]
+}
+
+export const getFiles = (dir: string, files: string[] = []) => {
+  // Get an array of all files and directories in the passed directory using fs.readdirSync
+  const fileList = readdirSync(dir)
+  // Create the full path of the file/directory by concatenating the passed directory and file/directory name
+  for (const file of fileList) {
+    const name = `${dir}/${file}`
+    // Check if the current file/directory is a directory using fs.statSync
+    if (statSync(name).isDirectory()) {
+      // If it is a directory, recursively call the getFiles function with the directory path and the files array
+      getFiles(name, files)
+    } else {
+      // If it is a file, push the full path to the files array
+      files.push(name)
+    }
+  }
+  return files
 }

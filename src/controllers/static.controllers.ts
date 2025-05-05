@@ -4,6 +4,7 @@ import mime from 'mime'
 import path from 'path'
 import { UPLOAD_IMG_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
 import { HttpStatus } from '~/constants/enum'
+import { sendFileFromS3 } from '~/utils/s3'
 export const handleServeImageController = (req: Request, res: Response, next: NextFunction) => {
   const { name } = req.params
   return res.sendFile(`${UPLOAD_IMG_DIR}/${name}`, (err) => {
@@ -63,19 +64,21 @@ export const serveVideoStreamController = (req: Request, res: Response, next: Ne
   const videoSteams = createReadStream(videoPath, { start, end })
   videoSteams.pipe(res)
 }
-export const serveM3u8Controller = (req: Request, res: Response, next: NextFunction) => {
+export const serveM3u8Controller = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params
-  return res.sendFile(path.resolve(UPLOAD_VIDEO_DIR, id, 'master.m3u8'), (err) => {
-    if (err) {
-      res.status((err as any).status).send(err)
-    }
-  })
+  await sendFileFromS3(res, `videos-hls/${id}/master.m3u8`)
+  // return res.sendFile(path.resolve(UPLOAD_VIDEO_DIR, id, 'master.m3u8'), (err) => {
+  //   if (err) {
+  //     res.status((err as any).status).send(err)
+  //   }
+  // })
 }
-export const serveSegmentController = (req: Request, res: Response, next: NextFunction) => {
+export const serveSegmentController = async (req: Request, res: Response, next: NextFunction) => {
   const { id, v, segment } = req.params
-  return res.sendFile(path.resolve(UPLOAD_VIDEO_DIR, id, v, segment), (err) => {
-    if (err) {
-      res.status((err as any).status).send(err)
-    }
-  })
+  await sendFileFromS3(res, `videos-hls/${id}/${v}/${segment}`)
+  // return res.sendFile(path.resolve(UPLOAD_VIDEO_DIR, id, v, segment), (err) => {
+  //   if (err) {
+  //     res.status((err as any).status).send(err)
+  //   }
+  // })
 }

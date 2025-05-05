@@ -12,6 +12,7 @@ import { isEmpty } from 'lodash'
 import { ErrorWithStatus } from '~/models/Errors'
 import FollowSchema from '~/models/schemas/Follow.schema'
 import axios from 'axios'
+import { sendForgotPasswordEmail, sendVerifyEmailTemplate } from '~/utils/email'
 dotenv.config()
 
 class UsersService {
@@ -176,6 +177,14 @@ class UsersService {
         exp
       })
     )
+    // flow verify email like:
+    // 1. server send email to user
+    // 2. user click link in email to verify
+    // 3. client send request to server with email_verify_token
+    // 4. server verify email_verify_token and update user verify status
+    // 5. client receive access_token and refresh_token
+    // 6. client store access_token and refresh_token in local storage or cookie
+    await sendVerifyEmailTemplate(payload.email, email_verify_token)
 
     return {
       access_token,
@@ -306,8 +315,9 @@ class UsersService {
     }
   }
 
-  async resendEmailVerify(user_id: string) {
+  async resendEmailVerify(user_id: string, email: string) {
     const email_verify_token = await this.signEmailVerifyToken({ verify: UserVerifyStatus.Unverified, user_id })
+    await sendVerifyEmailTemplate(email, email_verify_token)
     const result = await databaseService.users.updateOne(
       {
         _id: new ObjectId(user_id)
@@ -330,7 +340,7 @@ class UsersService {
     }
   }
 
-  async forgotPassword({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
+  async forgotPassword({ user_id, verify, email }: { user_id: string; verify: UserVerifyStatus; email: string }) {
     const forgot_password_token = await this.signForgotPasswordToken({ user_id, verify })
     await databaseService.users.updateOne(
       { _id: new ObjectId(user_id) },
@@ -346,7 +356,7 @@ class UsersService {
 
     // sau khi update forgot_password_token xong thi gui email kem link den email nguoi dung co dang:
     // https://twitter.com/forgot-password?token=token
-    console.log('forgot_password_token: ', forgot_password_token)
+    await sendForgotPasswordEmail(email, forgot_password_token)
     return {
       message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD
     }

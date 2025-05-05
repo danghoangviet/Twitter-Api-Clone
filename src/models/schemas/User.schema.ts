@@ -12,7 +12,7 @@ interface UserTypes {
   email_verify_token?: string
   forgot_password_token?: string
   verify?: UserVerifyStatus
-
+  twitter_circle?: ObjectId[]
   bio?: string
   location?: string
   website?: string
@@ -32,7 +32,7 @@ export default class Users {
   email_verify_token: string
   forgot_password_token: string
   verify: UserVerifyStatus
-
+  twitter_circle: ObjectId[] // danh sach id cua nhung nguoi user nay add vao circle
   bio: string
   location: string
   website: string
@@ -52,7 +52,7 @@ export default class Users {
     this.email_verify_token = user.email_verify_token || ''
     this.forgot_password_token = user.forgot_password_token || ''
     this.verify = user.verify || UserVerifyStatus.Unverified
-
+    this.twitter_circle = user.twitter_circle || []
     this.bio = user.bio || ''
     this.location = user.location || ''
     this.website = user.website || ''
