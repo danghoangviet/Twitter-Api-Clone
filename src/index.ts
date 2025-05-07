@@ -13,8 +13,10 @@ import tweetsRouter from './routers/tweets.routes'
 import bookmarksRouter from './routers/bookmarks.routes'
 import likesRouter from './routers/likes.routes'
 import searchRouter from './routers/search.routes'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
 // import '~/utils/fake'
-import '~/utils/s3'
+// import '~/utils/s3'
 config()
 
 databaseService.connect().then(() => {
@@ -25,6 +27,40 @@ databaseService.connect().then(() => {
   databaseService.indexTweets()
 }) // Call the MongoDB connection function
 const app = express()
+// use web socket io
+const httpServer = createServer(app)
+const io = new Server(httpServer, {
+  cors: {
+    origin: 'http://localhost:3000'
+  }
+})
+
+const users = new Map<string, { socket_id: string }>()
+
+io.on('connection', (socket) => {
+  console.log(`User connected: ${socket.id}`)
+  console.log(socket.handshake.auth)
+  const user_id = socket.handshake.auth._id
+  users.set(user_id, {
+    socket_id: socket.id
+  })
+
+  socket.on('private_message', (data) => {
+    const receiver_socket_id = users.get(data.to)?.socket_id
+    if (receiver_socket_id) {
+      io.to(receiver_socket_id).emit('receiver_private_message', {
+        from: user_id,
+        message: data.message
+      })
+    }
+  })
+
+  socket.on('disconnect', () => {
+    // remove user from map
+    users.delete(user_id)
+    console.log(`User disconnected: ${socket.id}`)
+  })
+})
 const port = process.env.PORT || 4000
 
 // create folder upload
@@ -59,6 +95,6 @@ app.use(
 // middleware to handle errors
 app.use(defaultErrorHandler as ErrorRequestHandler)
 
-app.listen(port, () => {
+httpServer.listen(port, () => {
   console.log(`App listening on port ${port}`)
 })

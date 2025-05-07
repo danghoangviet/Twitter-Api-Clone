@@ -73,7 +73,6 @@ class Queue {
             })
           })
         )
-        console.log('path.resolve(UPLOAD_VIDEO_DIR, idName): ', path.resolve(UPLOAD_VIDEO_DIR, idName))
         await Promise.all([
           fsPromise.unlink(filePath), // remove file mp4
           fsPromise.rm(path.resolve(UPLOAD_VIDEO_DIR, idName), {
@@ -81,6 +80,7 @@ class Queue {
             force: true // bỏ qua lỗi nếu folder không tồn tại
           }) // remove folder video hls after upload to s3
         ])
+        // cach 2: rimrafSync(path.resolve(UPLOAD_VIDEO_DIR, idName))
         await databaseService.videoStatus.updateOne(
           {
             name: idName
