@@ -8,6 +8,7 @@ import Tweet from '~/models/schemas/Twitter.schema'
 import Hashtag from '~/models/schemas/Hashtag.schema'
 import Bookmark from '~/models/schemas/Bookmark.schema'
 import LikeSchema from '~/models/schemas/Like.schema'
+import Conversation from '~/models/schemas/Conversation.schema'
 dotenv.config()
 const username = process.env.DB_USERNAME
 const password = process.env.DB_PASSWORD
@@ -116,6 +117,9 @@ class DatabaseService {
 
   get likes(): Collection<LikeSchema> {
     return this.db.collection(process.env.LIKES_COLLECTION as string)
+  }
+  get conversations(): Collection<Conversation> {
+    return this.db.collection(process.env.CONVERSATION_COLLECTION as string)
   }
 }
 const databaseService = new DatabaseService()
