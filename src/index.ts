@@ -7,7 +7,6 @@ import mediasRouter from './routers/medias.routes'
 import staticRouter from './routers/static.routes'
 import cors from 'cors'
 import { initFolder } from './utils/files'
-import { config } from 'dotenv'
 import { UPLOAD_IMG_DIR, UPLOAD_VIDEO_DIR } from './constants/dir'
 import tweetsRouter from './routers/tweets.routes'
 import bookmarksRouter from './routers/bookmarks.routes'
@@ -18,9 +17,36 @@ import { createServer } from 'http'
 import conversationsRouter from './routers/conversations.routes'
 import initSocket from './utils/socket'
 
+import swaggerUi from 'swagger-ui-express'
+import swaggerJsdoc from 'swagger-jsdoc'
+import { envConfig } from './utils/config'
+
+const options: swaggerJsdoc.Options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Swagger X (Twitter API) Clone',
+      version: '1.0.0'
+    },
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        }
+      }
+    }
+  },
+  apis: ['./src/routers/*.routes.ts', './src/models/requests/*.requests.ts'] // files containing annotations as above
+}
+
+const openapiSpecification = swaggerJsdoc(options)
+// const file = readFileSync(path.resolve('swagger.yaml'), 'utf8')
+// const swaggerDocument = YAML.parse(file)
+
 // import '~/utils/fake'
 // import '~/utils/s3'
-config()
 databaseService.connect().then(() => {
   databaseService.indexUsers()
   databaseService.indexRefreshTokens()
@@ -31,7 +57,9 @@ databaseService.connect().then(() => {
 
 const app = express()
 const httpServer = createServer(app)
-const port = process.env.PORT || 4000
+const port = envConfig.port || 4000
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification))
 
 // create folder upload
 initFolder()

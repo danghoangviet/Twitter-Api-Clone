@@ -1,4 +1,3 @@
-import { config } from 'dotenv'
 import { Request } from 'express'
 import { unlinkSync } from 'fs'
 import fsPromise from 'fs/promises'
@@ -7,7 +6,7 @@ import sharp from 'sharp'
 import { UPLOAD_IMG_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
 import { EncodingStatus, MediaType } from '~/constants/enum'
 import { Media } from '~/models/Other'
-import { isProduction } from '~/utils/config'
+import { envConfig, isProduction } from '~/utils/config'
 import {
   getFiles,
   getNameFromFullName,
@@ -20,7 +19,6 @@ import databaseService from './database.services'
 import VideoStatus from '~/models/schemas/VideoStatus.schema'
 import { uploadFileToS3 } from '~/utils/s3'
 import mime from 'mime'
-config()
 
 class Queue {
   items: string[]
@@ -192,8 +190,8 @@ class MediasService {
         const name = getNameFromFullName(file.newFilename)
         queue.enqueue(file.filepath)
         const videoURI = isProduction
-          ? `${process.env.HOST}/static/video-hls/${name}/master.m3u8`
-          : `http://localhost:${process.env.PORT}/static/video-hls/${name}/master.m3u8`
+          ? `${envConfig.host}/static/video-hls/${name}/master.m3u8`
+          : `http://localhost:${envConfig.port}/static/video-hls/${name}/master.m3u8`
         return {
           url: videoURI,
           type: MediaType.HLS

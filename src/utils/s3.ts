@@ -1,17 +1,15 @@
 import { readFileSync } from 'fs'
 import { S3 } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
-import { config } from 'dotenv'
-import path from 'path'
 import { Response } from 'express'
 import { HttpStatus } from '~/constants/enum'
-config()
+import { envConfig } from './config'
 
 const s3 = new S3({
-  region: process.env.AWS_REGION,
+  region: envConfig.aws.region,
   credentials: {
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID as string
+    secretAccessKey: envConfig.aws.secretAccessKey,
+    accessKeyId: envConfig.aws.accessKeyId
   }
 })
 
@@ -28,7 +26,7 @@ export const uploadFileToS3 = async ({
   const file = readFileSync(filePath)
   const parallelUploads3 = new Upload({
     client: s3,
-    params: { Bucket: process.env.S3_BUCKET_NAME as string, Key: fileName, Body: file, ContentType: contentType },
+    params: { Bucket: envConfig.aws.s3BucketName, Key: fileName, Body: file, ContentType: contentType },
 
     // optional tags
     tags: [
@@ -54,7 +52,7 @@ export const uploadFileToS3 = async ({
 export const sendFileFromS3 = async (res: Response, filePath: string) => {
   try {
     const fileStream = await s3.getObject({
-      Bucket: process.env.S3_BUCKET_NAME as string,
+      Bucket: envConfig.aws.s3BucketName,
       Key: filePath
     })
     // res.setHeader('Content-Type', 'video/mp4')

@@ -5,6 +5,7 @@ import { ErrorWithStatus } from '~/models/Errors'
 import { verifyToken } from './jwt'
 import { capitalize } from 'lodash'
 import { JsonWebTokenError } from 'jsonwebtoken'
+import { envConfig } from './config'
 
 export const numberEnumToArray = (numberEnum: { [key: string]: string | number }) => {
   return Object.values(numberEnum).filter((value) => typeof value === 'number') as number[]
@@ -28,7 +29,7 @@ export const verifyAccessToken = async (value: string, req?: Request) => {
   try {
     const decoded_authorization = await verifyToken({
       token: access_token,
-      secretOrPublicKey: process.env.JWT_ACCESS_TOKEN_SECRETKEY as string
+      secretOrPublicKey: envConfig.security.jwt.accessTokenSecret
     })
     if (req) {
       ;(req as Request).decoded_authorization = decoded_authorization

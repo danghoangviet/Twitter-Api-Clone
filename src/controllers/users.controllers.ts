@@ -1,9 +1,6 @@
-import { config } from 'dotenv'
 import { NextFunction, Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { pick } from 'lodash'
 import { ObjectId } from 'mongodb'
-import { join } from 'path'
 import { HttpStatus, UserVerifyStatus } from '~/constants/enum'
 import { USERS_MESSAGES } from '~/constants/messages'
 import {
@@ -21,9 +18,8 @@ import {
   UpdateMeRequestBody
 } from '~/models/requests/User.requests'
 import Users from '~/models/schemas/User.schema'
-import databaseService from '~/services/database.services'
 import usersServices from '~/services/users.services'
-config()
+import { envConfig } from '~/utils/config'
 
 export const LoginController = async (req: Request<ParamsDictionary, any, LoginRequestBody>, res: Response) => {
   const { verify } = req.user as Users
@@ -38,7 +34,7 @@ export const LoginController = async (req: Request<ParamsDictionary, any, LoginR
 export const OauthController = async (req: Request, res: Response, next: NextFunction) => {
   const { code } = req.query
   const result = await usersServices.oauth(code as string)
-  const urlRedirect = `${process.env.CLIENT_REDIRECT_CALLBACK}?access_token=${result?.access_token}&refresh_token=${result?.refresh_token}&new_user=${result?.newUser}&verify=${result?.verify}`
+  const urlRedirect = `${envConfig.googleOAuth.clientRedirectCallback}?access_token=${result?.access_token}&refresh_token=${result?.refresh_token}&new_user=${result?.newUser}&verify=${result?.verify}`
   return res.redirect(urlRedirect)
 }
 

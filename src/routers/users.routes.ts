@@ -37,12 +37,40 @@ import { UpdateMeRequestBody } from '~/models/requests/User.requests'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const usersRouter = Router()
+
 /**
- * Path: /login
- * Method: POST
- * Description: login user
- * Body: { email: string, password: string}
+ * @swagger
+ * /users/login:
+ *   post:
+ *     tags:
+ *       - users
+ *     summary: Đăng nhập
+ *     description: Đăng nhập vào hệ thống
+ *     operationId: loginUser
+ *     requestBody:
+ *       description: Thông tin đăng nhập
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/loginUser'
+ *     responses:
+ *       '200':
+ *         description: Đăng nhập thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Login successfully
+ *                 result:
+ *                   $ref: '#/components/schemas/successAuthentication'
+ *       '422':
+ *         description: Invalid input
  */
+
 usersRouter.post('/login', loginValidator, wrapRequestHandler(LoginController))
 /**
  * Path: /oauth/google
@@ -116,11 +144,31 @@ usersRouter.post(
  */
 usersRouter.post('/reset-password', resetPasswordValidator, wrapRequestHandler(ResetPasswordController))
 /**
- * Path: /me
- * Method: GET
- * Description: get user info
- * Header: { Authorization: Bearer <access_token>}
+ * @swagger
+ * /users/me:
+ *   get:
+ *     tags:
+ *       - users
+ *     summary: Lấy thông tin người dùng
+ *     description: Lấy thông tin người dùng hiện tại
+ *     operationId: getCurrUser
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       default:
+ *         description: Lấy thông tin người dùng thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Get my profile success
+ *                 result:
+ *                   $ref: '#/components/schemas/UserProfile'
  */
+
 usersRouter.get('/me', accessTokenValidator, wrapRequestHandler(GetMeController))
 /**
  * Path: /me

@@ -11,6 +11,7 @@ import { TokenPayload } from '~/models/requests/User.requests'
 import databaseService from '~/services/database.services'
 import usersServices from '~/services/users.services'
 import { verifyAccessToken } from '~/utils/commons'
+import { envConfig } from '~/utils/config'
 import { hashPassword } from '~/utils/crypto'
 import { verifyToken } from '~/utils/jwt'
 import { validate } from '~/utils/validation'
@@ -65,7 +66,7 @@ const forGotPasswordSchema: ParamSchema = {
       try {
         const decoded_forgot_password_token = await verifyToken({
           token: values,
-          secretOrPublicKey: process.env.JWT_FORGOT_PASSWORD_TOKEN_SECRETKEY as string
+          secretOrPublicKey: envConfig.security.jwt.forgotPasswordTokenSecret
         })
 
         ;(req as Request).decoded_forgot_password_token = decoded_forgot_password_token
@@ -240,7 +241,7 @@ const refreshTokenValidator = validate(
         options: async (values: string, { req }) => {
           try {
             const [decoded_refresh_token, refresh_token] = await Promise.all([
-              verifyToken({ token: values, secretOrPublicKey: process.env.JWT_REFRESH_TOKEN_SECRETKEY as string }),
+              verifyToken({ token: values, secretOrPublicKey: envConfig.security.jwt.refreshTokenSecret }),
               databaseService.refreshTokens.findOne({ token: values })
             ])
             if (!refresh_token) {
@@ -282,7 +283,7 @@ const emailTokenValidator = validate(
           try {
             const decoded_email_verify_token = await verifyToken({
               token: values,
-              secretOrPublicKey: process.env.JWT_EMAIL_VERIFY_TOKEN_SECRETKEY as string
+              secretOrPublicKey: envConfig.security.jwt.emailVerifyTokenSecret
             })
 
             ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
@@ -343,7 +344,7 @@ const verifyForgotPasswordValidator = validate(
           try {
             const decoded_forgot_password_token = await verifyToken({
               token: values,
-              secretOrPublicKey: process.env.JWT_FORGOT_PASSWORD_TOKEN_SECRETKEY as string
+              secretOrPublicKey: envConfig.security.jwt.forgotPasswordTokenSecret
             })
 
             ;(req as Request).decoded_forgot_password_token = decoded_forgot_password_token
